@@ -2,6 +2,10 @@
 Version: 1.0
 Created on: Sat Mar 20 18:55:27 2021
 Author: Balaji Kannan
+Description: Lower Back Pain Dataset from Kaggle
+    1. https://www.kaggle.com/sammy123/lower-back-pain-symptoms-dataset
+    2. This pipeline is custom built for a single target variable with Datatype Object.
+    3. Binary classification problem.
 
 """
 
@@ -16,7 +20,7 @@ import seaborn as sns
 #%% IO Path & Dataframe Definitions
 
 PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
-FNAME = r"\Dataset_Lower_Back_Pain.csv"
+FNAME = r"\Dataset_Lower_Back_Pain.csv" # Prefix LrBkPn
 
 OUTPATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Output"
 PREFIX = r"\LrBkPn_"
@@ -145,7 +149,8 @@ def data_split(X,y):
     -------
     Split dataframe into train and test
     """
-    X_train, X_test, y_train, y_test = train_test_split(X, y.values.ravel(), test_size=0.3, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y.values.ravel(), test_size=0.3,
+                                                        random_state=39)
     scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
     scaler.fit(X_train)
     train_scaled = scaler.transform(X_train) # Only feature variables are scaled
@@ -195,3 +200,41 @@ print(result.summary2())
     indicates that there is multicoliniarity.
     Removing those variable would improve the convergence.
 """
+
+#%% Feature Reduction Tryouts
+
+features_to_drop = ['pelvic_incidence', 'lumbar_lordosis_angle'] # From Correlation Heatmap
+
+new_lst = targlst + features_to_drop
+X = df.drop(columns=new_lst)
+y = df.filter(targlst, axis=1)
+
+X_train_scaled, X_test_scaled, y_train, y_test = data_split(X,y)
+logreg_result = logistic_regression(X_train_scaled, y_train)
+
+print("Training set score: {:.3f}".format(logreg_result.score(X_train_scaled,y_train)))
+print("Test set score: {:.3f}".format(logreg_result.score(X_test_scaled,y_test)))
+
+logit_model = sm.Logit(y_train, X_train_scaled)
+result = logit_model.fit()
+print(result.summary2())
+
+#%% Consider only Variables for which P-value is < 0.05
+
+features_to_drop1 = ['sacral_slope',  'pelvic_slope',  'Direct_tilt',
+                     'thoracic_slope',  'cervical_tilt',  'sacrum_angle',
+                     'scoliosis_slope', 'pelvic_tilt'] #
+new_lst1 = targlst + features_to_drop + features_to_drop1
+X = df.drop(columns=new_lst1)
+y = df.filter(targlst, axis=1)
+print(X.head())
+
+X_train_scaled, X_test_scaled, y_train, y_test = data_split(X,y)
+logreg_result = logistic_regression(X_train_scaled, y_train)
+
+print("Training set score: {:.3f}".format(logreg_result.score(X_train_scaled,y_train)))
+print("Test set score: {:.3f}".format(logreg_result.score(X_test_scaled,y_test)))
+
+logit_model = sm.Logit(y_train, X_train_scaled)
+result = logit_model.fit()
+print(result.summary2())
