@@ -14,8 +14,22 @@ Encoding: Abnormal = 0; Normal = 1
 
 import numpy as np
 import pandas as pd
+from pandas_profiling import ProfileReport
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+import ppscore as pps
+import hiplot as hip
+
+from pca import pca
+from sklearn.decomposition import PCA as SKLPCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+import statsmodels.api as sm
 
 #%% IO Path & Dataframe Definitions
 
@@ -57,13 +71,8 @@ print("List of Targets:", targlst, sep='\n')
 
 #%% Exploratory Data Analysis
 
-OFNAME1 = r"Tab_01_Descriptive_Stats.txt"
-
-desc_stat = df.describe() # Univariate analyses
+desc_stat = df.describe().round(3) # Univariate analyses
 print(desc_stat)
-FOUT1 = open(f"{OUTPATH}{PREFIX}{OFNAME1}", 'w+')
-desc_stat.to_string(FOUT1)
-FOUT1.close()
 
 # Generating n*4 matrix of box plots
 
@@ -95,8 +104,6 @@ for i in range(0, 3, 1):
 
 # Non-Linear Correlation Predictive Power Score - Heatmap
 
-import ppscore as pps
-
 FIG3 = r"Fig_03_Predictive_Power_Score"
 
 ppscorr = pps.matrix(df) # Predictive Power Score - PPS
@@ -119,10 +126,6 @@ grid1.savefig(f"{OUTPATH}{PREFIX}{FIG4}")
 
 #%% Feature Reduction - PCA
 
-from pca import pca
-from sklearn.decomposition import PCA as SKLPCA
-from sklearn.preprocessing import StandardScaler
-
 X = df.drop(columns=targlst)
 y = df.filter(targlst, axis=1)
 
@@ -131,9 +134,6 @@ X_scaled = scaler.fit_transform(X)
 
 # Principal Component Analyses
 
-OFNAME3 = r"Tab_02_PCA_Explained_Variance_Ratio.txt"
-OFNAME31 = r"Tab_03_PCA_Components.txt"
-
 sklpca = SKLPCA(n_components=0.95, svd_solver='full')
 sklpca.fit(X_scaled)
 X_transform = sklpca.transform(X_scaled)
@@ -141,52 +141,45 @@ X_transform = sklpca.transform(X_scaled)
 pricom = pd.DataFrame(sklpca.components_.round(3)) # Principal Components
 pricomvar = pd.DataFrame(sklpca.explained_variance_ratio_.round(3))
 
-FOUT3 = open(f"{OUTPATH}{PREFIX}{OFNAME3}", 'w+')
-pricomvar.to_string(FOUT3)
-FOUT3.close()
-
-FOUT31 = open(f"{OUTPATH}{PREFIX}{OFNAME31}", 'w+')
-pricom.to_string(FOUT31)
-FOUT31.close()
-
 # Identifying Top Features of  PCA using pca module
-
-OFNAME4 = r"Tab_04_PCA_Top_Features.txt"
 
 model = pca(n_components=0.95, normalize=True, random_state=39)
 out = model.fit_transform(X)
-pcatopfeat = out['topfeat']
-
-FOUT4 = open(f"{OUTPATH}{PREFIX}{OFNAME4}", 'w+')
-pcatopfeat.to_string(FOUT4)
-FOUT4.close()
+pcatopfeat = out['topfeat'].round(3)
 
 FIG5 = r"Fig_05_PCA_Model_Plot"
 fig, ax = model.plot()
 ax.figure.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
-#%% Pandas Profile Report
 
-from pandas_profiling import ProfileReport
+#%% EDA Report Out
 
-OFNAME5 = r"Report_01_Descriptive_Stats.html"
+# Output to Excel
+
+SUMMARY = r"00_Results_Summary.xlsx"
+
+writer = pd.ExcelWriter(f"{OUTPATH}{PREFIX}{SUMMARY}", engine='xlsxwriter')
+desc_stat.to_excel(writer, sheet_name='Stats')
+pricomvar.to_excel(writer, sheet_name='PCA_VAR')
+pricom.to_excel(writer, sheet_name='PCA_Components')
+pcatopfeat.to_excel(writer, sheet_name='PCA_Top_Features')
+writer.save()
+
+# Pandas Profiling Report
+
+PPREP = r"01_Descriptive_Stats.html"
 report = ProfileReport(df) # Descriptive statistics report
-report.to_file(f"{OUTPATH}{PREFIX}{OFNAME5}") # Rendering to HTML
+report.to_file(f"{OUTPATH}{PREFIX}{PPREP}") # Rendering to HTML
 
-#%% High Dimensional Interactive Plot - HD Plot
+# High Dimensional Interactive Plot - HD Plot
 
-import hiplot as hip
-
-OFNAME6 = r"Report_02_Parallel_Plot.html"
+HIDIPLOT = r"02_Parallel_Plot.html"
 parplot = hip.Experiment.from_dataframe(df)
-parplot.to_html(f"{OUTPATH}{PREFIX}{OFNAME6}")
+parplot.to_html(f"{OUTPATH}{PREFIX}{HIDIPLOT}")
 
 #%% Machine Learning Model - Pre-Processing
 
 # from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
+
 
 X = df.drop(columns=targlst)
 y = df.filter(targlst, axis=1)
@@ -247,7 +240,6 @@ plt.savefig(f"{OUTPATH}{PREFIX}{FIG6}")
 print(classification_report(y_test, y_pred))
 
 #%% Logit with Stats Model
-import statsmodels.api as sm
 
 logit_model = sm.Logit(y_train, X_train_scaled)
 result = logit_model.fit()
