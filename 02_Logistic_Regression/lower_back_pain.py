@@ -47,7 +47,7 @@ print("List of Targets:", targlst, sep='\n')
 
 #%% Exploratory Data Analysis
 
-OFNAME1 = r"01_Descriptive_Stats.txt"
+OFNAME1 = r"TAB_01_Descriptive_Stats.txt"
 
 desc_stat = df.describe() # Univariate analyses
 print(desc_stat)
@@ -61,7 +61,7 @@ n_rows = len(collst)//4
 fig, axes = plt.subplots(n_rows, 4, figsize = (15,15))
 axes = axes.flatten()
 
-FIG1 = r"_FIG01_Boxplot"
+FIG1 = r"FIG_01_Boxplot"
 for i in range(0,len(df.columns)-targetvar):
     sns.boxplot(x=targlst[0], y=df.iloc[:,i], data=df, orient='v', ax=axes[i])
     plt.tight_layout()
@@ -74,7 +74,7 @@ for i in range(0, 3, 1):
     temp = 'linear_cor' + str(i)
     temp = df.corr(method=cormethod[i])
     ftemp = cormethod[i].title()
-    FIG2 = r"_FIG02_Corr_"
+    FIG2 = r"FIG_02_Corr_"
     mask = np.zeros(temp.shape, dtype=bool)
     mask[np.tril_indices(len(mask))] = False
     plt.subplots(figsize=(20,15))
@@ -87,7 +87,7 @@ for i in range(0, 3, 1):
 
 import ppscore as pps
 
-FIG3 = r"_FIG03_Predictive_Power_Score"
+FIG3 = r"FIG_03_Predictive_Power_Score"
 
 ppscorr = pps.matrix(df) # Predictive Power Score - PPS
 matrix_df = pps.matrix(df)[['x', 'y', 'ppscore']].pivot(columns='x', index='y',
@@ -98,7 +98,7 @@ plt.savefig(f"{OUTPATH}{PREFIX}{FIG3}")
 
 # Scatter Plot with Hue
 
-FIG4 = r"_FIG04_Scatter_Plot"
+FIG4 = r"FIG_04_Scatter_Plot"
 
 grid1 = sns.PairGrid(df, hue=targlst[0])
 grid1.map(plt.scatter)
@@ -107,26 +107,74 @@ grid1.add_legend()
 grid1.fig.suptitle("Scatter Plot", y=1.01)
 grid1.savefig(f"{OUTPATH}{PREFIX}{FIG4}")
 
+#%% Feature Reduction - PCA
+
+from pca import pca
+from sklearn.decomposition import PCA as SKLPCA
+from sklearn.preprocessing import StandardScaler
+
+df.loc[df.Class_att=='Abnormal',targlst[0]] = 1
+df.loc[df.Class_att=='Normal', targlst[0]] = 0
+X = df.drop(columns=targlst)
+y = df.filter(targlst, axis=1)
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Principal Component Analyses
+
+OFNAME3 = r"Tab_03_PCA_Explained_Variance_Ratio.txt"
+OFNAME31 = r"Tab_03_PCA_Components.txt"
+
+sklpca = SKLPCA(n_components=0.95, svd_solver='full')
+sklpca.fit(X_scaled)
+X_transform = sklpca.transform(X_scaled)
+
+pricom = pd.DataFrame(sklpca.components_.round(3)) # Principal Components
+pricomvar = pd.DataFrame(sklpca.explained_variance_ratio_.round(3))
+
+FOUT3 = open(f"{OUTPATH}{PREFIX}{OFNAME3}", 'w+')
+pricomvar.to_string(FOUT3)
+FOUT3.close()
+
+FOUT31 = open(f"{OUTPATH}{PREFIX}{OFNAME31}", 'w+')
+pricom.to_string(FOUT31)
+FOUT31.close()
+
+# Identifying Top Features of  PCA using pca module
+
+OFNAME4 = r"Tab_04_PCA_Top_Features.txt"
+
+model = pca(n_components=0.95, normalize=True, random_state=39)
+out = model.fit_transform(X)
+pcatopfeat = out['topfeat']
+
+FOUT4 = open(f"{OUTPATH}{PREFIX}{OFNAME4}", 'w+')
+pcatopfeat.to_string(FOUT4)
+FOUT4.close()
+
+FIG5 = r"FIG_05_PCA_Model_Plot"
+fig, ax = model.plot()
+ax.figure.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
 #%% Pandas Profile Report
 
 from pandas_profiling import ProfileReport
 
-OFNAME2 = r"02_Descriptive_Stats.html"
+OFNAME5 = r"REP_01_Descriptive_Stats.html"
 report = ProfileReport(df) # Descriptive statistics report
-report.to_file(f"{OUTPATH}{PREFIX}{OFNAME2}") # Rendering to HTML
+report.to_file(f"{OUTPATH}{PREFIX}{OFNAME5}") # Rendering to HTML
 
 #%% High Dimensional Interactive Plot - HD Plot
 
 import hiplot as hip
 
-OFNAME3 = r"03_Parallel_Plot.html"
+OFNAME6 = r"REP_02_Parallel_Plot.html"
 parplot = hip.Experiment.from_dataframe(df)
-parplot.to_html(f"{OUTPATH}{PREFIX}{OFNAME3}")
+parplot.to_html(f"{OUTPATH}{PREFIX}{OFNAME6}")
 
 #%% Machine Learning Model - Pre-Processing
 
-from sklearn import preprocessing
-from sklearn.preprocessing import StandardScaler
+# from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
@@ -203,7 +251,7 @@ print(result.summary2())
 
 #%% Feature Reduction Tryouts
 
-features_to_drop = ['pelvic_incidence', 'lumbar_lordosis_angle'] # From Correlation Heatmap
+features_to_drop = ['pelvic_incidence', 'sacral_slope'] # 'lumbar_lordosis_angle',
 
 new_lst = targlst + features_to_drop
 X = df.drop(columns=new_lst)
@@ -257,12 +305,12 @@ y_test_string[np.where(y_test_string == '1')] = 'Abnormal'
 
 from sklearn.metrics import confusion_matrix
 
-FIG5 = r"_FIG05_Confusion_Matrix"
+FIG6 = r"FIG_06_Confusion_Matrix"
 ax= plt.subplot()
 labels = ['Abnormal','Normal']
 cm = confusion_matrix(y_test_string, y_pred_string, labels)
 sns.heatmap(cm, annot=True, ax = ax, cmap='coolwarm'); #annot=True to annotate cells
-plt.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
+plt.savefig(f"{OUTPATH}{PREFIX}{FIG6}")
 
 # labels, title and ticks
 ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
