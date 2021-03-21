@@ -238,3 +238,33 @@ print("Test set score: {:.3f}".format(logreg_result.score(X_test_scaled,y_test))
 logit_model = sm.Logit(y_train, X_train_scaled)
 result = logit_model.fit()
 print(result.summary2())
+
+#%% Model Metrics
+
+# assigning the model predicted values to y_pred
+y_pred = logreg_result.predict(X_test_scaled)
+
+
+# assigning the string Normal and Abnormal to the 0 and 1 values respectively. This is useful in plotting
+# the confusion matrix
+y_pred_string = y_pred.astype(str)
+y_pred_string[np.where(y_pred_string == '0')] = 'Normal'
+y_pred_string[np.where(y_pred_string == '1')] = 'Abnormal'
+
+y_test_string = y_test.astype(str)
+y_test_string[np.where(y_test_string == '0')] = 'Normal'
+y_test_string[np.where(y_test_string == '1')] = 'Abnormal'
+
+from sklearn.metrics import confusion_matrix
+ax= plt.subplot()
+labels = ['Abnormal','Normal']
+cm = confusion_matrix(y_test_string, y_pred_string, labels)
+sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
+
+# labels, title and ticks
+ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
+ax.set_title('Confusion Matrix');
+ax.xaxis.set_ticklabels(['Abnormal', 'Normal']); ax.yaxis.set_ticklabels(['Abnormal', 'Normal']);
+plt.show()
+
+print(classification_report(y_test, y_pred, target_names=labels))
