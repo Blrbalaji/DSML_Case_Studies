@@ -256,10 +256,13 @@ y_test_string[np.where(y_test_string == '0')] = 'Normal'
 y_test_string[np.where(y_test_string == '1')] = 'Abnormal'
 
 from sklearn.metrics import confusion_matrix
+
+FIG5 = r"_FIG05_Confusion_Matrix"
 ax= plt.subplot()
 labels = ['Abnormal','Normal']
 cm = confusion_matrix(y_test_string, y_pred_string, labels)
-sns.heatmap(cm, annot=True, ax = ax); #annot=True to annotate cells
+sns.heatmap(cm, annot=True, ax = ax, cmap='coolwarm'); #annot=True to annotate cells
+plt.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
 
 # labels, title and ticks
 ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
