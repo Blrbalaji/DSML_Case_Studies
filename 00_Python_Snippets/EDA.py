@@ -29,11 +29,11 @@ from sklearn.preprocessing import StandardScaler
 
 ''' All Expected User Inputs are to be Specified '''
 
-PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
-FNAME = r"\Dataset_Lower_Back_Pain.csv"
+PATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Input"
+FNAME = r"\Dataset_Petrol_Consumption.csv"
 
-OUTPATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Output"
-PREFIX = r"\LrBkPn_" # Prefix for Output Files & Figures
+OUTPATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Output"
+PREFIX = r"\PetrolCon_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
@@ -139,16 +139,19 @@ plt.subplots(figsize=(20,15))
 sns.heatmap(matrix_df, cmap="Greens", annot=True, linewidth=0, annot_kws={"size":12}, fmt='.2g')
 plt.savefig(f"{OUTPATH}{PREFIX}{FIG3}")
 
-# %% Feature Reduction VIF
+# %% Feature Reduction -  Variance Inflation Factor [VIF]
 
 vif_data = pd.DataFrame()
 vif_data["Feature"] = df.columns
 vif_data["VIF"] = [variance_inflation_factor(df.values, i) for i in range(len(df.columns))]
 
-#%% Feature Reduction - PCA
+#%% Feature Reduction - Principal Component Analysis [PCA]
 
-X = df.drop(columns=targlst)
-y = df.filter(targlst, axis=1)
+if n_target == 0:
+    X = df.copy()
+else:
+    X = df.drop(columns=targlst)
+    y = df.filter(targlst, axis=1)
 
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
@@ -161,6 +164,9 @@ X_transform = sklpca.transform(X_scaled)
 
 pricom = pd.DataFrame(sklpca.components_.round(3)) # Principal Components
 pricomvar = pd.DataFrame(sklpca.explained_variance_ratio_.round(3))
+
+n_pca_comp = sklpca.n_components_
+print("No. of Components Explaining 95% Variance:", n_pca_comp)
 
 # Identifying Top Features of  PCA using pca module
 
