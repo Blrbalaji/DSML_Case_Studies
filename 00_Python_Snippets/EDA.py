@@ -3,21 +3,20 @@ Version: 1.0
 Created on: Sat Mar 27 19:58:12 2021
 Author: Balaji Kannan
 Description: Exploratory Data Analysis - EDA
-Scope:
-
-
+Objective:
+    1. To get an insight into input dataframe.
+    2. To get an understanding of basic statistics.
+    3. Identify features of importance through VIF, PCA and / or Decision Trees
 """
 
 #%% Library
 
 import numpy as np
 import pandas as pd
-from pandas_profiling import ProfileReport
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 import ppscore as pps
-import hiplot as hip
 
 from pca import pca
 from statsmodels.stats.outliers_influence import variance_inflation_factor
@@ -82,7 +81,6 @@ print(df.isnull().sum(), end='\n\n')
 df = df.apply(lambda x: x.fillna(x.mean()), axis=0)
 print(df.isnull().sum(), end='\n\n')
 print(df.head())
-
 # %% Descriptive Stats
 
 desc_stat = df.describe().T.round(3) # Univariate analyses
@@ -104,10 +102,16 @@ if len(y_catlst)!= 0:
             plt.savefig(f"{OUTPATH}{PREFIX}{FIG1}")
 
 if len(y_catlst)== 0:
-    fig, axes = plt.subplots(figsize = (45,15))
-    axes = axes
     FIG1 = r"Fig_01_Boxplot"
-    sns.boxplot(data=df)
+    lst = [x for x in collst if x not in y_catlst]
+    fig, axes = plt.subplots(1, len(lst), figsize = (45,15))
+    axes = axes
+    for i, col in enumerate(lst):
+        ax = sns.boxplot(y=df[col], ax=axes.flatten()[i])
+        axminlt = df[col].min()-0.1*df[col].min()
+        axmaxlt = df[col].max()+0.1*df[col].max()
+        ax.set_ylim(axminlt, axmaxlt)
+        ax.set_ylabel(col)
     plt.tight_layout()
     plt.savefig(f"{OUTPATH}{PREFIX}{FIG1}")
 
@@ -197,15 +201,3 @@ pricomvar.to_excel(writer, sheet_name='PCA_VAR')
 pricom.to_excel(writer, sheet_name='PCA_Components')
 pcatopfeat.to_excel(writer, sheet_name='PCA_Top_Features')
 writer.save()
-
-# Pandas Profiling Report
-
-PPREP = r"01_Descriptive_Stats.html"
-report = ProfileReport(df) # Descriptive statistics report
-report.to_file(f"{OUTPATH}{PREFIX}{PPREP}") # Rendering to HTML
-
-# High Dimensional Interactive Plot - HD Plot
-
-HIDIPLOT = r"02_Parallel_Plot.html"
-parplot = hip.Experiment.from_dataframe(df)
-parplot.to_html(f"{OUTPATH}{PREFIX}{HIDIPLOT}")
