@@ -22,20 +22,23 @@ from pca import pca
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from sklearn.decomposition import PCA as SKLPCA
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.tree import DecisionTreeRegressor
 #%% User Input Section
 
 ''' All Expected User Inputs are to be Specified '''
 
-PATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Input"
-FNAME = r"\Dataset_Petrol_Consumption.csv"
+PATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Input"
+FNAME = r"\Dataset_Creditcard_Mod.csv"
 
-OUTPATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Output"
-PREFIX = r"\PetrolCon_" # Prefix for Output Files & Figures
+OUTPATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Output"
+PREFIX = r"\CreditCard_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
+
+RNDSEED = 39 # random_state where used is assigned RNDSEED
 
 #%% DataFrame Definition
 
@@ -174,19 +177,43 @@ print("No. of Components Explaining 95% Variance:", n_pca_comp)
 
 # Identifying Top Features of  PCA using pca module
 
-model = pca(n_components=0.95, normalize=True, random_state=39)
+model = pca(n_components=0.95, normalize=True, random_state=RNDSEED)
 out = model.fit_transform(X)
 pcatopfeat = out['topfeat'].round(3)
 
 # Identifying Top Features of  PCA using pca module
 
-model = pca(n_components=0.95, normalize=True, random_state=39)
+model = pca(n_components=0.95, normalize=True, random_state=RNDSEED)
 out = model.fit_transform(X)
 pcatopfeat = out['topfeat'].round(3)
 
 FIG4 = r"Fig_04_PCA_Model_Plot"
 fig, ax = model.plot()
 ax.figure.savefig(f"{OUTPATH}{PREFIX}{FIG4}")
+
+# %% Feature Importance - Decision Tree Regressor
+
+if n_target != 0:
+    X = df.drop(columns=targlst)
+    y = df.drop(columns=featlst)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
+                                                        random_state=RNDSEED)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    MLM_DTR = DecisionTreeRegressor(max_depth=5, random_state=RNDSEED)
+    MLM_DTR.fit(X_train, y_train)
+    feat_imp = MLM_DTR.feature_importances_.round(3)
+    colhead = X.columns.tolist()
+    featimp = pd.DataFrame(np.column_stack([colhead, feat_imp]), columns=['Features',
+                                                                          'Coefficients'])
+    featimp = featimp.sort_values('Coefficients', ascending=False)
+else:
+    featimptemp = {'Features':[np.nan], 'Coefficients':[np.nan],
+                   'Remarks':['Unsupervised Learning']}
+    featimp = pd.DataFrame(featimptemp, columns=['Features',
+                                                 'Coefficients', 'Remarks'])
 
 #%% EDA Report Out
 
@@ -200,4 +227,5 @@ vif_data.to_excel(writer, sheet_name='VIF')
 pricomvar.to_excel(writer, sheet_name='PCA_VAR')
 pricom.to_excel(writer, sheet_name='PCA_Components')
 pcatopfeat.to_excel(writer, sheet_name='PCA_Top_Features')
+featimp.to_excel(writer, sheet_name='DTR-Features')
 writer.save()
