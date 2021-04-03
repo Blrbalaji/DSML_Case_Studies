@@ -27,7 +27,7 @@ import seaborn as sns
 from pca import pca
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA as SKLPCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
@@ -205,7 +205,7 @@ y = df.filter(['Stability'], axis=1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=RNDSEED)
 
 # Feature Scaling
-sc = StandardScaler()
+sc = MinMaxScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
@@ -243,7 +243,7 @@ y = df.filter(['Stability'], axis=1)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=RNDSEED)
 
-sc = StandardScaler()
+sc = MinMaxScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
@@ -271,7 +271,7 @@ y = df.filter(['Stability'], axis=1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=RNDSEED)
 
 # Feature Scaling
-sc = StandardScaler()
+sc = MinMaxScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
@@ -295,7 +295,7 @@ y = df.filter(['Stability'], axis=1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=RNDSEED)
 
 # Feature Scaling
-sc = StandardScaler()
+sc = MinMaxScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 

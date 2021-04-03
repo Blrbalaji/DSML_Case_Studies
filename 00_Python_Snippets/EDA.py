@@ -23,7 +23,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from sklearn.decomposition import PCA as SKLPCA
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeRegressor
 #%% User Input Section
 
@@ -160,7 +160,7 @@ else:
     X = df.drop(columns=targlst)
     y = df.filter(targlst, axis=1)
 
-scaler = StandardScaler()
+scaler = MinMaxScaler()
 X_scaled = scaler.fit_transform(X)
 
 # Principal Component Analyses
@@ -198,7 +198,7 @@ if n_target != 0:
     y = df.drop(columns=featlst)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
                                                         random_state=RNDSEED)
-    scaler = StandardScaler()
+    scaler = MinMaxScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
