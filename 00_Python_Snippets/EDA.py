@@ -29,11 +29,11 @@ from sklearn.tree import DecisionTreeRegressor
 
 ''' All Expected User Inputs are to be Specified '''
 
-PATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Input"
-FNAME = r"\Dataset_Creditcard_Mod.csv"
+PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
+FNAME = r"\Dataset_Lower_Back_Pain.csv"
 
-OUTPATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Output"
-PREFIX = r"\CreditCard_" # Prefix for Output Files & Figures
+OUTPATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Output"
+PREFIX = r"\LrBkPn_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
