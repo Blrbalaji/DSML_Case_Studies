@@ -31,10 +31,10 @@ from sklearn.tree import DecisionTreeRegressor
 ''' All Expected User Inputs are to be Specified '''
 
 PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
-FNAME = r"\Dataset_Lower_Back_Pain.csv"
+FNAME = r"\Dataset_Indian_Liver_Patient.csv"
 
 OUTPATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Output"
-PREFIX = r"\LrBkPn_" # Prefix for Output Files & Figures
+PREFIX = r"\InLrPt_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
@@ -259,3 +259,5 @@ pricom.to_excel(writer, sheet_name='PCA_Components')
 pcatopfeat.to_excel(writer, sheet_name='PCA_Top_Features')
 featimp.to_excel(writer, sheet_name='DTR-Features')
 writer.save()
+
+
