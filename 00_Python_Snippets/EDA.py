@@ -19,6 +19,7 @@ import seaborn as sns
 import ppscore as pps
 
 from pca import pca
+import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from sklearn.decomposition import PCA as SKLPCA
@@ -88,6 +89,16 @@ print(df.head())
 
 desc_stat = df.describe().T.round(3) # Univariate analyses
 print(desc_stat)
+
+# Check for Normality - Visual Check - Plots not being saved.
+
+for x in featlst:
+    fig,ax = plt.subplots(nrows=1,ncols=3,figsize=(15,5))
+    sns.histplot(data=df,x=x,kde=True,ax=ax[0])
+    sm.qqplot(df[x],ax=ax[1],line='45',fit=True)
+    ax[1].set_xlabel(x)
+    sns.boxplot(data=df,x=x,ax=ax[2])
+    plt.show()
 
 #%% Box Plot
 
@@ -215,6 +226,25 @@ else:
     featimp = pd.DataFrame(featimptemp, columns=['Features',
                                                  'Coefficients', 'Remarks'])
 
+#%% Scatter Plot of Top 5 Features of Importance from DTR
+
+FIG5 = r"Fig_05_Scatter_Plot_Top5"
+
+DTR_featlst = featimp['Features'].to_list()
+topfeat = []
+for i in range(0, 5, 1):
+    topfeat.append(DTR_featlst[i])
+print("Top 5 Features:", topfeat, end='\n')
+
+topfeat.extend(targlst) # Adding target variables to topfeatures
+
+df_scatter = df.filter(topfeat, axis=1)
+grid1 = sns.pairplot(df_scatter, hue=None)
+grid1.map(plt.scatter)
+grid1.map_diag(sns.kdeplot)
+grid1.add_legend()
+grid1.fig.suptitle("Scatter & KDE Plots", y=1.01)
+grid1.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
 #%% EDA Report Out
 
 # Output to Excel
