@@ -13,7 +13,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-
 import catboost as cb
 
 #%% User Input Section
