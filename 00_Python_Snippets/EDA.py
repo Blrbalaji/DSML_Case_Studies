@@ -35,11 +35,11 @@ from sklearn.tree import DecisionTreeRegressor
 
 warnings.filterwarnings("ignore")
 
-PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
-FNAME = r"\Dataset_Indian_Liver_Patient.csv"
+PATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Input"
+FNAME = r"\Dataset_Creditcard_Mod.csv"
 
-OUTPATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Output"
-PREFIX = r"\InLrPt_" # Prefix for Output Files & Figures
+OUTPATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Output"
+PREFIX = r"\CreditCard_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
@@ -234,11 +234,23 @@ else:
 
 #%% Scatter Plot of Top 5 Features of Importance from DTR
 
-FIG5 = r"Fig_05_Scatter_Plot_Top5"
+FIG5 = r"Fig_05_Scatter_Plot"
+
+temp = featimp["Coefficients"].to_numpy()
+
+cumsum = 0
+for i in range(0, len(temp), 1):
+    cumsum = cumsum + float(temp[i])
+    if cumsum >= 0.95:
+        break
+    else:
+        continue
+
+n_crit_feat = i
 
 DTR_featlst = featimp['Features'].to_list()
 topfeat = []
-for i in range(0, 5, 1):
+for i in range(0, n_crit_feat+1, 1):
     topfeat.append(DTR_featlst[i])
 print("Top 5 Features:", topfeat, end='\n')
 
@@ -249,7 +261,7 @@ grid1 = sns.pairplot(df_scatter, hue=None)
 grid1.map(plt.scatter)
 grid1.map_diag(sns.kdeplot)
 grid1.add_legend()
-grid1.fig.suptitle("Scatter & KDE Plots", y=1.01)
+grid1.fig.suptitle("Features Explaining >= 95% Variance", y=1.01)
 grid1.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
 #%% EDA Report Out
 
@@ -266,4 +278,12 @@ pcatopfeat.to_excel(writer, sheet_name='PCA_Top_Features')
 featimp.to_excel(writer, sheet_name='DTR-Features')
 writer.save()
 
+#%%
 
+# High Dimensional Interactive Plot - HD Plot
+
+import hiplot as hip
+
+HIDIPLOT = r"01_Parallel_Plot.html"
+parplot = hip.Experiment.from_dataframe(df)
+parplot.to_html(f"{OUTPATH}{PREFIX}{HIDIPLOT}")
