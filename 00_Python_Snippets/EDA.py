@@ -11,10 +11,13 @@ Objective:
 
 #%% Library
 
+import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+plt.style.use("ggplot")
 import seaborn as sns
+from tabulate import tabulate
 
 import ppscore as pps
 
@@ -30,6 +33,8 @@ from sklearn.tree import DecisionTreeRegressor
 
 ''' All Expected User Inputs are to be Specified '''
 
+warnings.filterwarnings("ignore")
+
 PATH = r"C:\DSML_Case_Studies\02_Logistic_Regression\Input"
 FNAME = r"\Dataset_Indian_Liver_Patient.csv"
 
@@ -40,6 +45,7 @@ n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
 
 RNDSEED = 39 # random_state where used is assigned RNDSEED
+TESTSIZE = 0.2 # test_size where used is assigned TESTSIZE
 
 #%% DataFrame Definition
 
@@ -84,11 +90,11 @@ for i in range(0, len(collst), 1):
 print(df.isnull().sum(), end='\n\n')
 df = df.apply(lambda x: x.fillna(x.mean()), axis=0)
 print(df.isnull().sum(), end='\n\n')
-print(df.head())
+print(tabulate(df.head(), headers=df.columns, tablefmt="github", showindex='never'))
 # %% Descriptive Stats
 
 desc_stat = df.describe().T.round(3) # Univariate analyses
-print(desc_stat)
+print(tabulate(desc_stat, headers=desc_stat.columns, tablefmt="github"))
 
 # Check for Normality - Visual Check - Plots not being saved.
 
@@ -207,7 +213,7 @@ ax.figure.savefig(f"{OUTPATH}{PREFIX}{FIG4}")
 if n_target != 0:
     X = df.drop(columns=targlst)
     y = df.drop(columns=featlst)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TESTSIZE,
                                                         random_state=RNDSEED)
     scaler = MinMaxScaler()
     X_train = scaler.fit_transform(X_train)
