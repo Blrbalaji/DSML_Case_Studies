@@ -252,7 +252,7 @@ DTR_featlst = featimp['Features'].to_list()
 topfeat = []
 for i in range(0, n_crit_feat+1, 1):
     topfeat.append(DTR_featlst[i])
-print("Top 5 Features:", topfeat, end='\n')
+print("Top Features:", topfeat, end='\n')
 
 topfeat.extend(targlst) # Adding target variables to topfeatures
 
