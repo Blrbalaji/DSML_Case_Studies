@@ -11,6 +11,7 @@ Objective:
 
 #%% Library
 
+import io
 import warnings
 import numpy as np
 import pandas as pd
@@ -35,11 +36,11 @@ from sklearn.tree import DecisionTreeRegressor
 
 warnings.filterwarnings("ignore")
 
-PATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Input"
-FNAME = r"\Dataset_Creditcard_Mod.csv"
+PATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Input"
+FNAME = r"\Dataset_Petrol_Consumption_4x1.csv"
 
-OUTPATH = r"C:\DSML_Case_Studies\03_K_Means_Clustering\Output"
-PREFIX = r"\CreditCard_" # Prefix for Output Files & Figures
+OUTPATH = r"C:\DSML_Case_Studies\01_Linear_Regression\Output"
+PREFIX = r"\PetrolCon_" # Prefix for Output Files & Figures
 
 n_features = int(input("Enter the Number of Features in Dataset: "))
 n_target = int(input("Enter the Number of Targets in Dataset: "))
@@ -51,6 +52,8 @@ TESTSIZE = 0.2 # test_size where used is assigned TESTSIZE
 
 df = pd.read_csv(f"{PATH}{FNAME}")
 df = df.round(decimals=3) # rounding the decimals
+
+DF_INFO = df.dtypes.to_frame('Data Type').reset_index()
 
 collst = []
 for columns in df.columns:
@@ -270,6 +273,7 @@ grid1.savefig(f"{OUTPATH}{PREFIX}{FIG5}")
 SUMMARY = r"00_Results_Summary.xlsx"
 
 writer = pd.ExcelWriter(f"{OUTPATH}{PREFIX}{SUMMARY}", engine='xlsxwriter')
+DF_INFO.to_excel(writer, sheet_name='Info')
 desc_stat.to_excel(writer, sheet_name='Stats')
 vif_data.to_excel(writer, sheet_name='VIF')
 pricomvar.to_excel(writer, sheet_name='PCA_VAR')
