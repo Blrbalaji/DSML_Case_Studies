@@ -2,5 +2,8 @@ conda install -c conda-forge tabulate
 
 conda install -c conda-forge pandas-profiling
 
+conda install -c conda-forge ppscore
+
 conda install -c conda-forge hiplot
 
+pip install pca
